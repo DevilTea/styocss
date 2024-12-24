@@ -1,5 +1,4 @@
 import type { Engine, EnginePlugin } from '../engine'
-import type { CorePluginsConfig } from '../plugins'
 import type { Arrayable, Awaitable } from '../types'
 
 export type PreflightFn = (engine: Engine) => string
@@ -24,7 +23,9 @@ export interface ResolvedAutocompleteConfig {
 	cssProperties: Map<string, (string | number)[]>
 }
 
-export interface BasicEngineConfig extends CorePluginsConfig {
+export interface BasicEngineConfig {
+	plugins?: EnginePlugin[]
+
 	/**
 	 * Define styles that will be injected globally.
 	 */
@@ -53,8 +54,6 @@ export interface EngineConfig extends BasicEngineConfig {
 	 * @default '.$'
 	 */
 	defaultSelector?: string
-
-	plugins?: Awaitable<Arrayable<EnginePlugin>>[]
 }
 
 export interface ResolvedCommonConfig {

@@ -1,5 +1,6 @@
 import { appendAutocompleteCssPropertyValues, appendAutocompleteExtraCssProperties, defineEnginePlugin } from '../../helpers'
 import type { Arrayable } from '../../types'
+import { defineType } from '../../utils'
 
 interface VariableAutocomplete {
 	/**
@@ -17,9 +18,9 @@ interface VariableAutocomplete {
 }
 
 export type VariableConfig =
-	| `--${string}`
-	| [name: `--${string}`, value?: string, autocomplete?: VariableAutocomplete]
-	| { name: `--${string}`, value?: string, autocomplete?: VariableAutocomplete }
+	| string
+	| [name: string, value?: string, autocomplete?: VariableAutocomplete]
+	| { name: string, value?: string, autocomplete?: VariableAutocomplete }
 
 interface ResolvedVariableConfig {
 	name: string
@@ -54,18 +55,34 @@ function getNames(input: string): string[] {
 	}).filter(Boolean)
 }
 
+function normalizeVariableName(name: string, prefix?: string) {
+	if (name.startsWith('--'))
+		return name
+	if (prefix != null)
+		return `--${prefix}-${name}`
+	return `--${name}`
+}
+
 export function variables() {
 	const allVariables: Map</* name */ string, /* css */ string> = new Map()
+	let prefix: string | undefined
 	let configList: VariableConfig[]
 	return defineEnginePlugin({
 		name: 'core:variables',
 		enforce: 'post',
+		customConfigType: defineType<{
+			variablesPrefix?: string
+			variables?: VariableConfig[]
+		}>(),
+
 		config(config) {
+			prefix = config.variablesPrefix
 			configList = config.variables ?? []
 		},
 		configResolved(resolvedConfig) {
 			configList.forEach((config) => {
-				const { name, value, autocomplete: { asValueOf, asProperty } } = resolveVariableConfig(config)
+				const { name: _name, value, autocomplete: { asValueOf, asProperty } } = resolveVariableConfig(config)
+				const name = normalizeVariableName(_name, prefix)
 
 				asValueOf.forEach(p => appendAutocompleteCssPropertyValues(resolvedConfig, p, `var(${name})`))
 

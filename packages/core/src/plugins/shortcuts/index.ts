@@ -1,7 +1,7 @@
 import { appendAutocompleteExtraProperties, appendAutocompletePropertyValues, appendAutocompleteStyleItemStrings, defineEnginePlugin } from '../../helpers'
-import { AbstractResolver, type DynamicRule, type StaticRule } from '../../utils'
+import { AbstractResolver, type DynamicRule, type StaticRule, defineType } from '../../utils'
 import type { Arrayable, _StyleDefinition, _StyleItem } from '../../types'
-import type { StyleItem } from '../../detailedTypes'
+import type { StyleItem } from '../../detailed-types'
 import { addToSet, isNotString } from '../../utils'
 
 type StaticShortcutRule = StaticRule<_StyleItem[]>
@@ -117,6 +117,10 @@ export function shortcuts() {
 		{
 			name: 'core:shortcuts:post',
 			enforce: 'post',
+			customConfigType: defineType<{
+				shortcuts?: ShortcutConfig[]
+			}>(),
+
 			config(config) {
 				configList = config.shortcuts ?? []
 			},

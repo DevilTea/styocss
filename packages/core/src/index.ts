@@ -1,5 +1,5 @@
 export type * from './types'
-export type * from './detailedTypes'
+export type * from './detailed-types'
 export * from './constants'
 export * from './utils'
 export * from './config'
