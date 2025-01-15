@@ -1,10 +1,10 @@
-import type { Arrayable, Awaitable, _StyleDefinition, _StyleItem } from '../types'
-import type { EngineConfig, ResolvedEngineConfig } from '../config'
+import type { Arrayable, AutocompleteConfig, Awaitable, PreflightConfig, _StyleDefinition, _StyleItem } from '../types'
+import type { EngineConfig, ResolvedEngineConfig } from './engine'
 
 type DefineHooks<Hooks extends Record<string, [type: 'sync' | 'async', payload: any]>> = Hooks
 
-type EngineHooksDefinition = DefineHooks<{
-	config: ['async', EngineConfig]
+type EngineHooksDefinition<CustomConfig extends Record<string, any> = Record<string, any>> = DefineHooks<{
+	config: ['async', EngineConfig & CustomConfig]
 	configResolved: ['async', ResolvedEngineConfig]
 	transformSelectors: ['async', string[]]
 	transformStyleItems: ['async', _StyleItem[]]
@@ -58,40 +58,36 @@ export const hooks: EngineHooks = {
 		execSyncHook(plugins, 'atomicRuleAdded', undefined),
 }
 
-type EnginePluginHooksOptions = {
-	[K in keyof EngineHooksDefinition]?: EngineHooksDefinition[K][0] extends 'async'
-		? (...params: EngineHooksDefinition[K][1] extends void ? [] : [payload: EngineHooksDefinition[K][1]]) => Awaitable<EngineHooksDefinition[K][1] | void>
-		: (...params: EngineHooksDefinition[K][1] extends void ? [] : [payload: EngineHooksDefinition[K][1]]) => EngineHooksDefinition[K][1] | void
+type EnginePluginHooksOptions<CustomConfig extends Record<string, any> = Record<string, any>> = {
+	[K in keyof EngineHooksDefinition<CustomConfig>]?: EngineHooksDefinition<CustomConfig>[K][0] extends 'async'
+		? (...params: EngineHooksDefinition<CustomConfig>[K][1] extends void ? [] : [payload: EngineHooksDefinition<CustomConfig>[K][1]]) => Awaitable<EngineHooksDefinition<CustomConfig>[K][1] | void>
+		: (...params: EngineHooksDefinition<CustomConfig>[K][1] extends void ? [] : [payload: EngineHooksDefinition<CustomConfig>[K][1]]) => EngineHooksDefinition<CustomConfig>[K][1] | void
 }
 
-export interface ResolvedEnginePlugin extends EnginePluginHooksOptions {
+export interface ResolvedEnginePlugin<CustomConfig extends Record<string, any> = Record<string, any>> extends EnginePluginHooksOptions<CustomConfig> {
 	name: string
 	enforce?: 'pre' | 'post'
-	/**
-	 * **Note:** This is a type only field and will not be used by the engine.
-	 */
-	customConfigType?: Record<string, any>
+	preset?: {
+		preflights?: PreflightConfig[]
+		autocomplete?: AutocompleteConfig
+	}
 }
 
-export type EnginePlugin = Awaitable<Arrayable<ResolvedEnginePlugin>>
-
-export type ResolveEnginePlugins<List extends EnginePlugin[]> = List extends [infer Plugin extends EnginePlugin, ...infer Rest extends EnginePlugin[]]
-	? Plugin extends ResolvedEnginePlugin
-		? [Plugin, ...ResolveEnginePlugins<Rest>]
-		: Plugin extends ResolvedEnginePlugin[]
-			? [...Plugin, ...ResolveEnginePlugins<Rest>]
-			: [...ResolveEnginePlugins<[Awaited<Plugin>]>, ...ResolveEnginePlugins<Rest>]
-	: []
+export type EnginePlugin<CustomConfig extends Record<string, any> = Record<string, any>> = Arrayable<ResolvedEnginePlugin<CustomConfig>>
 
 const orderMap = new Map([
 	[undefined, 1],
 	['pre', 0],
 	['post', 2],
 ])
-export async function resolvePlugins(plugins: EnginePlugin[]) {
+export async function resolvePlugins(plugins: Awaitable<EnginePlugin>[]) {
 	const result: ResolvedEnginePlugin[] = []
 	for (const plugin of plugins)
 		result.push(...[await plugin].flat())
 
 	return result.sort((a, b) => orderMap.get(a.enforce)! - orderMap.get(b.enforce)!)
+}
+
+export function defineEnginePlugin<CustomConfig extends Record<string, any> = Record<string, any>>(plugin: EnginePlugin<CustomConfig>): EnginePlugin {
+	return plugin as EnginePlugin
 }

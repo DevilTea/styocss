@@ -1,6 +1,5 @@
-import { appendAutocompleteCssPropertyValues, appendAutocompleteExtraCssProperties, defineEnginePlugin } from '../../helpers'
-import type { Arrayable } from '../../types'
-import { defineType } from '../../utils'
+import { appendAutocompleteCssPropertyValues, appendAutocompleteExtraCssProperties, defineEnginePlugin } from '../../../helpers'
+import type { Arrayable } from '../../../types'
 
 interface VariableAutocomplete {
 	/**
@@ -34,10 +33,12 @@ interface ResolvedVariableConfig {
 function resolveVariableConfig(config: VariableConfig): ResolvedVariableConfig {
 	if (typeof config === 'string')
 		return { name: config, value: null, autocomplete: { asValueOf: ['*'], asProperty: true } }
+
 	if (Array.isArray(config)) {
 		const [name, value, { asValueOf = '*', asProperty = true } = {}] = config
 		return { name, value, autocomplete: { asValueOf: [asValueOf].flat(), asProperty } }
 	}
+
 	const { name, value, autocomplete: { asValueOf = '*', asProperty = true } = {} } = config
 	return { name, value, autocomplete: { asValueOf: [asValueOf].flat(), asProperty } }
 }
@@ -46,6 +47,7 @@ const VAR_NAME_RE = /var\((--[^,)]+)(?:,[^)]+)?\)/g
 
 function getNames(input: string): string[] {
 	const matched = input.match(VAR_NAME_RE)
+
 	if (!matched)
 		return []
 
@@ -58,22 +60,26 @@ function getNames(input: string): string[] {
 function normalizeVariableName(name: string, prefix?: string) {
 	if (name.startsWith('--'))
 		return name
+
 	if (prefix != null)
 		return `--${prefix}-${name}`
+
 	return `--${name}`
+}
+
+interface CustomConfig {
+	variablesPrefix?: string
+	variables?: VariableConfig[]
 }
 
 export function variables() {
 	const allVariables: Map</* name */ string, /* css */ string> = new Map()
 	let prefix: string | undefined
 	let configList: VariableConfig[]
-	return defineEnginePlugin({
+
+	return defineEnginePlugin<CustomConfig>({
 		name: 'core:variables',
 		enforce: 'post',
-		customConfigType: defineType<{
-			variablesPrefix?: string
-			variables?: VariableConfig[]
-		}>(),
 
 		config(config) {
 			prefix = config.variablesPrefix

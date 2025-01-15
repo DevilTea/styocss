@@ -1,45 +1,7 @@
-import type { Engine, EnginePlugin } from '../engine'
-import type { Arrayable, Awaitable } from '../types'
+import type { EnginePlugin } from '../engine'
+import type { AutocompleteConfig, PreflightConfig, PreflightFn, ResolvedAutocompleteConfig } from '../types'
 
-export type PreflightFn = (engine: Engine) => string
-
-export type PreflightConfig = string | PreflightFn
-
-export interface AutocompleteConfig {
-	selectors?: string[]
-	styleItemStrings?: string[]
-	extraProperties?: string[]
-	extraCssProperties?: string[]
-	properties?: [property: string, tsType: Arrayable<string>][]
-	cssProperties?: [property: string, value: Arrayable<string | number>][]
-}
-
-export interface ResolvedAutocompleteConfig {
-	selectors: Set<string>
-	styleItemStrings: Set<string>
-	extraProperties: Set<string>
-	extraCssProperties: Set<string>
-	properties: Map<string, string[]>
-	cssProperties: Map<string, (string | number)[]>
-}
-
-export interface BasicEngineConfig {
-	plugins?: EnginePlugin[]
-
-	/**
-	 * Define styles that will be injected globally.
-	 */
-	preflights?: PreflightConfig[]
-
-	autocomplete?: AutocompleteConfig
-
-	/**
-	 * Custom configuration.
-	 */
-	[K: string]: any
-}
-
-export interface EngineConfig extends BasicEngineConfig {
+export interface EngineConfig {
 	/**
 	 * Prefix for atomic style name.
 	 *
@@ -54,6 +16,18 @@ export interface EngineConfig extends BasicEngineConfig {
 	 * @default '.$'
 	 */
 	defaultSelector?: string
+
+	/**
+	 * Define styles that will be injected globally.
+	 */
+	preflights?: PreflightConfig[]
+
+	autocomplete?: AutocompleteConfig
+
+	/**
+	 * Custom configuration.
+	 */
+	[K: string]: any
 }
 
 export interface ResolvedCommonConfig {
@@ -61,9 +35,11 @@ export interface ResolvedCommonConfig {
 	autocomplete: ResolvedAutocompleteConfig
 }
 
-export interface ResolvedEngineConfig extends ResolvedCommonConfig {
+export interface ResolvedEngineConfig {
 	rawConfig: EngineConfig
 	prefix: string
 	defaultSelector: string
+	preflights: PreflightFn[]
+	autocomplete: ResolvedAutocompleteConfig
 	plugins: EnginePlugin[]
 }

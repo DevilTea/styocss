@@ -1,10 +1,47 @@
 import { isNotNullish, numberToChars, serialize } from '../utils'
-import type { AtomicRule, AtomicRuleContent, ExtractedAtomicRuleContent, _StyleDefinition, _StyleItem } from '../types'
+import type { AtomicRule, AtomicRuleContent, AutocompleteConfig, ExtractedAtomicRuleContent, PreflightConfig, PreflightFn, ResolvedAutocompleteConfig, _StyleDefinition, _StyleItem } from '../types'
 import { ATOMIC_STYLE_NAME_PLACEHOLDER, ATOMIC_STYLE_NAME_PLACEHOLDER_RE_GLOBAL } from '../constants'
-import { type EngineConfig, type PreflightFn, type ResolvedEngineConfig, resolveEngineConfig } from '../config'
-import { corePlugins } from '../plugins'
+import { resolveEngineConfig } from '../config'
 import { type ExtractFn, createExtractFn } from './extractor'
-import { hooks, resolvePlugins } from './plugin'
+import { type EnginePlugin, hooks, resolvePlugins } from './plugin'
+
+export interface EngineConfig {
+	/**
+	 * Prefix for atomic style name.
+	 *
+	 * @default ''
+	 */
+	prefix?: string
+	/**
+	 * Default value for `$selector` property. (`'$'` will be replaced with the atomic style name.)
+	 *
+	 * @example '.$' - Usage in class attribute: `<div class="a b c">`
+	 * @example '[data-styo="$"]' - Usage in attribute selector: `<div data-styo="a b c">`
+	 * @default '.$'
+	 */
+	defaultSelector?: string
+
+	/**
+	 * Define styles that will be injected globally.
+	 */
+	preflights?: PreflightConfig[]
+
+	autocomplete?: AutocompleteConfig
+
+	/**
+	 * Custom configuration.
+	 */
+	[K: string]: any
+}
+
+export interface ResolvedEngineConfig {
+	rawConfig: EngineConfig
+	prefix: string
+	defaultSelector: string
+	preflights: PreflightFn[]
+	autocomplete: ResolvedAutocompleteConfig
+	plugins: EnginePlugin[]
+}
 
 export async function createEngine(config: EngineConfig = {}): Promise<Engine> {
 	const plugins = await resolvePlugins([

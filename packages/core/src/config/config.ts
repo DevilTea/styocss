@@ -38,7 +38,7 @@ export async function resolveEngineConfig(config: EngineConfig): Promise<Resolve
 	const {
 		prefix = '',
 		defaultSelector = `.${ATOMIC_STYLE_NAME_PLACEHOLDER}`,
-		plugins = [],
+		presets = [],
 		...commonConfig
 	} = config
 

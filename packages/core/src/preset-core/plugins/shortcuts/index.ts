@@ -1,8 +1,8 @@
-import { appendAutocompleteExtraProperties, appendAutocompletePropertyValues, appendAutocompleteStyleItemStrings, defineEnginePlugin } from '../../helpers'
-import { AbstractResolver, type DynamicRule, type StaticRule, defineType } from '../../utils'
-import type { Arrayable, _StyleDefinition, _StyleItem } from '../../types'
-import type { StyleItem } from '../../detailed-types'
-import { addToSet, isNotString } from '../../utils'
+import { appendAutocompleteExtraProperties, appendAutocompletePropertyValues, appendAutocompleteStyleItemStrings, defineEnginePlugin } from '../../../helpers'
+import { AbstractResolver, type DynamicRule, type StaticRule } from '../../../utils'
+import type { Arrayable, _StyleDefinition, _StyleItem } from '../../../types'
+import type { StyleItem } from '../../../detailed-types'
+import { addToSet, isNotString } from '../../../utils'
 
 type StaticShortcutRule = StaticRule<_StyleItem[]>
 
@@ -110,16 +110,17 @@ function resolveShortcutConfig(config: ShortcutConfig): ResolvedShortcutConfig |
 	throw new Error('Invalid shortcut config')
 }
 
+interface CustomConfig {
+	shortcuts?: ShortcutConfig[]
+}
+
 export function shortcuts() {
 	const shortcutResolver = new ShortcutResolver()
 	let configList: ShortcutConfig[]
-	return defineEnginePlugin([
+	return defineEnginePlugin<CustomConfig>([
 		{
 			name: 'core:shortcuts:post',
 			enforce: 'post',
-			customConfigType: defineType<{
-				shortcuts?: ShortcutConfig[]
-			}>(),
 
 			config(config) {
 				configList = config.shortcuts ?? []

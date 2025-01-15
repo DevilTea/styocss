@@ -1,3 +1,5 @@
+import type { Engine } from './engine/engine'
+
 export type Arrayable<T> = T | T[]
 
 export type Awaitable<T> = T | Promise<T>
@@ -35,4 +37,26 @@ export interface AtomicRuleContent {
 export interface AtomicRule {
 	name: string
 	content: AtomicRuleContent
+}
+
+export type PreflightFn = (engine: Engine) => string
+
+export type PreflightConfig = string | PreflightFn
+
+export interface AutocompleteConfig {
+	selectors?: string[]
+	styleItemStrings?: string[]
+	extraProperties?: string[]
+	extraCssProperties?: string[]
+	properties?: [property: string, tsType: Arrayable<string>][]
+	cssProperties?: [property: string, value: Arrayable<string | number>][]
+}
+
+export interface ResolvedAutocompleteConfig {
+	selectors: Set<string>
+	styleItemStrings: Set<string>
+	extraProperties: Set<string>
+	extraCssProperties: Set<string>
+	properties: Map<string, string[]>
+	cssProperties: Map<string, (string | number)[]>
 }

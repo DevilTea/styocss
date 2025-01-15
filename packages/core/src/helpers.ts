@@ -1,6 +1,6 @@
-import type { EngineConfig, ResolvedCommonConfig } from './config'
+import type { EngineConfig, EnginePreset, ResolvedCommonConfig } from './config'
 import type { EnginePlugin } from './engine'
-import { corePlugins } from './plugins'
+import { corePlugins } from './preset-core/plugins'
 import type { Simplify } from './types'
 import { addToSet } from './utils'
 
@@ -30,11 +30,7 @@ export function appendAutocompleteCssPropertyValues(config: ResolvedCommonConfig
 	config.autocomplete.cssProperties.set(property, [...current, ...values])
 }
 
-export function defineEnginePlugin<Plugins extends EnginePlugin[]>(plugins: [...Plugins]): Plugins
-export function defineEnginePlugin<Plugin extends EnginePlugin>(plugin: Plugin): Plugin
-export function defineEnginePlugin(plugin: EnginePlugin | EnginePlugin[]) {
-	return plugin
-}
+export { defineEnginePlugin } from './engine/plugin'
 
 type MakeCustomConfigType<
 	Plugins extends EnginePlugin[] = [],

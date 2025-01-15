@@ -3,6 +3,6 @@ export {
 	Engine,
 } from './engine'
 export {
-	type ResolvedEnginePlugin as EnginePlugin,
+	type EnginePlugin,
 	resolvePlugins,
 } from './plugin'
